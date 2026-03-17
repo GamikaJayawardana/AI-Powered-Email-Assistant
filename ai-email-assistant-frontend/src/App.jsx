@@ -4,6 +4,8 @@ import { useState } from 'react';
 function App() {
   const [emailContent, setEmailContent] = useState("");
   const [tone, setTone] = useState("");
+  const [length, setLength] = useState("");
+  const [customInstructions, setCustomInstructions] = useState("");
   const [generatedReply, setGeneratedReply] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -16,7 +18,7 @@ function App() {
     try {
       const response = await axios.post(
         "http://localhost:8080/api/email/generate",
-        { emailContent, tone }
+        { emailContent, tone, length, customInstructions }
       );
       setGeneratedReply(typeof response.data === "string" ? response.data : JSON.stringify(response.data));
     } catch (error) {
@@ -61,26 +63,60 @@ function App() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2 ml-1">Desired Tone (Optional)</label>
-            <div className="relative">
-              <select
-                className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-slate-100 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all cursor-pointer shadow-inner"
-                value={tone}
-                onChange={(e) => setTone(e.target.value)}
-              >
-                <option value="" className="bg-slate-800">Default</option>
-                <option value="formal" className="bg-slate-800">Formal</option>
-                <option value="casual" className="bg-slate-800">Casual</option>
-                <option value="friendly" className="bg-slate-800">Friendly</option>
-                <option value="professional" className="bg-slate-800">Professional</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
-                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                </svg>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2 ml-1">Desired Tone</label>
+              <div className="relative">
+                <select
+                  className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-slate-100 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all cursor-pointer shadow-inner"
+                  value={tone}
+                  onChange={(e) => setTone(e.target.value)}
+                >
+                  <option value="" className="bg-slate-800">Default</option>
+                  <option value="formal" className="bg-slate-800">Formal</option>
+                  <option value="casual" className="bg-slate-800">Casual</option>
+                  <option value="friendly" className="bg-slate-800">Friendly</option>
+                  <option value="professional" className="bg-slate-800">Professional</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                  </svg>
+                </div>
               </div>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2 ml-1">Reply Length</label>
+              <div className="relative">
+                <select
+                  className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-slate-100 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all cursor-pointer shadow-inner"
+                  value={length}
+                  onChange={(e) => setLength(e.target.value)}
+                >
+                  <option value="" className="bg-slate-800">Default</option>
+                  <option value="brief" className="bg-slate-800">Brief</option>
+                  <option value="standard" className="bg-slate-800">Standard</option>
+                  <option value="detailed" className="bg-slate-800">Detailed</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2 ml-1">Custom Instructions (Optional)</label>
+            <input
+              type="text"
+              className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all shadow-inner"
+              placeholder="e.g., Always sign off with 'Best, Gamika'"
+              value={customInstructions}
+              onChange={(e) => setCustomInstructions(e.target.value)}
+            />
           </div>
 
           <button

@@ -84,6 +84,14 @@ public class EmailGeneratorService {
             prompt.append("Use a ").append(emailRequest.getTone()).append(" tone. ");
         }
 
+        if (emailRequest.getLength() != null && !emailRequest.getLength().isEmpty()) {
+            prompt.append("Make the length of the reply ").append(emailRequest.getLength()).append(". ");
+        }
+
+        if (emailRequest.getCustomInstructions() != null && !emailRequest.getCustomInstructions().isEmpty()) {
+            prompt.append("Follow these custom instructions exactly: ").append(emailRequest.getCustomInstructions()).append(". ");
+        }
+
         prompt.append("\nOriginal Email: \n").append(emailRequest.getEmailContent());
         return prompt.toString();
     }

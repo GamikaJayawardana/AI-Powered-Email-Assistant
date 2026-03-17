@@ -28,7 +28,7 @@ function createUIContainer() {
     select.className = 'ai-tone-select';
     
     const options = [
-        { value: '', label: 'Default' },
+        { value: '', label: 'Tone' },
         { value: 'formal', label: 'Formal' },
         { value: 'casual', label: 'Casual' },
         { value: 'friendly', label: 'Friendly' },
@@ -42,6 +42,24 @@ function createUIContainer() {
         select.appendChild(optionEl);
     });
 
+    // Length Selector
+    const lengthSelect = document.createElement('select');
+    lengthSelect.className = 'ai-length-select ai-tone-select'; // Reuse tone styling
+    
+    const lengthOptions = [
+        { value: '', label: 'Length' },
+        { value: 'brief', label: 'Brief' },
+        { value: 'standard', label: 'Standard' },
+        { value: 'detailed', label: 'Detailed' }
+    ];
+    
+    lengthOptions.forEach(opt => {
+        const optionEl = document.createElement('option');
+        optionEl.value = opt.value;
+        optionEl.textContent = opt.label;
+        lengthSelect.appendChild(optionEl);
+    });
+
     // AI Button
     const button = document.createElement('div');
     button.className = 'ai-reply-btn';
@@ -53,22 +71,38 @@ function createUIContainer() {
     button.setAttribute('data-tooltip', 'Generate AI Reply');
 
     container.appendChild(select);
+    container.appendChild(lengthSelect);
     container.appendChild(button);
 
-    return { container, button, select };
+    return { container, button, select, lengthSelect };
 }
 
 /**
- * Scrapes the email content from the thread.
+ * Scrapes the email content from the entire thread.
  */
 function getEmailContent() {
-    const selectors = ['.h7', '.a3s.ail', '.gmail_quote', '[role="presentation"]'];
-    for (const selector of selectors) {
-        const content = document.querySelector(selector);
-        if (content && content.innerText.trim()) {
-            return content.innerText.trim();
-        }
+    let fullText = "";
+    
+    // Gmail classes for expanded messages in a thread: .a3s.ail
+    // Gmail classes for collapsed earlier messages (snippet): .y6
+    const messageBodies = document.querySelectorAll('.a3s.ail, .h7, .gmail_quote');
+    
+    if (messageBodies && messageBodies.length > 0) {
+        // Reverse iterate or just grab all visible text to give the AI context of what was said
+        messageBodies.forEach((node, index) => {
+            if (node.innerText && node.innerText.trim()) {
+                fullText += `\n--- Message ${index + 1} ---\n` + node.innerText.trim() + "\n";
+            }
+        });
+        return fullText.trim();
     }
+
+    // Fallback if the thread selectors fail
+    const fallback = document.querySelector('[role="presentation"]');
+    if (fallback && fallback.innerText.trim()) {
+        return fallback.innerText.trim();
+    }
+    
     return '';
 }
 
@@ -87,7 +121,7 @@ async function injectButton() {
         return;
     }
 
-    const { container, button, select } = createUIContainer();
+    const { container, button, select, lengthSelect } = createUIContainer();
     
     button.addEventListener('click', async () => {
         console.log("AI Reply button clicked");
@@ -101,6 +135,13 @@ async function injectButton() {
 
             const emailContent = getEmailContent();
             const tone = select.value || "professional"; // Default to professional if empty string
+            const length = lengthSelect.value || "standard"; // Default length
+
+            // Fetch custom instructions from chrome.storage
+            const storageResult = await new Promise((resolve) => {
+                chrome.storage.local.get(['customInstructions'], resolve);
+            });
+            const customInstructions = storageResult.customInstructions || "";
             
             const response = await fetch('http://localhost:8080/api/email/generate', {
                 method: 'POST',
@@ -109,7 +150,9 @@ async function injectButton() {
                 },
                 body: JSON.stringify({ 
                     emailContent: emailContent,
-                    tone: tone
+                    tone: tone,
+                    length: length,
+                    customInstructions: customInstructions
                 })
             });
 
