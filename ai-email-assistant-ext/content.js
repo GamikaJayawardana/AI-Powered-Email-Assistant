@@ -17,17 +17,45 @@ function findComposeToolbar() {
 }
 
 /**
- * Creates the AI Reply button with Gmail-native styling.
+ * Creates the AI UI container with Tone Select and Reply button.
  */
-function createAIButton() {
+function createUIContainer() {
+    const container = document.createElement('div');
+    container.className = 'ai-reply-container';
+
+    // Tone Selector
+    const select = document.createElement('select');
+    select.className = 'ai-tone-select';
+    
+    const options = [
+        { value: '', label: 'Default' },
+        { value: 'formal', label: 'Formal' },
+        { value: 'casual', label: 'Casual' },
+        { value: 'friendly', label: 'Friendly' },
+        { value: 'professional', label: 'Professional' }
+    ];
+    
+    options.forEach(opt => {
+        const optionEl = document.createElement('option');
+        optionEl.value = opt.value;
+        optionEl.textContent = opt.label;
+        select.appendChild(optionEl);
+    });
+
+    // AI Button
     const button = document.createElement('div');
-    // Using Gmail's native button classes for a seamless look
-    button.className = 'T-I J-J5-Ji aoO v7 T-I-atl L3 ai-reply-btn';
-    button.style.marginRight = '8px';
-    button.innerHTML = 'AI Reply';
+    button.className = 'ai-reply-btn';
+    button.innerHTML = `
+        <span class="ai-btn-icon">✨</span>
+        <span class="ai-btn-text">AI Reply</span>
+    `;
     button.setAttribute('role', 'button');
     button.setAttribute('data-tooltip', 'Generate AI Reply');
-    return button;
+
+    container.appendChild(select);
+    container.appendChild(button);
+
+    return { container, button, select };
 }
 
 /**
@@ -48,9 +76,9 @@ function getEmailContent() {
  * Injects the AI button into the toolbar.
  */
 async function injectButton() {
-    const existingButton = document.querySelector('.ai-reply-btn');
-    if (existingButton) {
-        existingButton.remove();
+    const existingContainer = document.querySelector('.ai-reply-container');
+    if (existingContainer) {
+        existingContainer.remove();
     }
 
     const toolbar = findComposeToolbar();
@@ -59,19 +87,20 @@ async function injectButton() {
         return;
     }
 
-    const button = createAIButton();
+    const { container, button, select } = createUIContainer();
     
     button.addEventListener('click', async () => {
         console.log("AI Reply button clicked");
         try {
-            const originalText = button.innerHTML;
-            button.innerHTML = 'Generating...';
-            // Note: 'div' buttons don't have a 'disabled' property like <button>, 
-            // so we manage state visually or via pointer-events.
+            button.innerHTML = `
+                <span class="ai-btn-icon loading-spin">⏳</span>
+                <span class="ai-btn-text">Generating...</span>
+            `;
             button.style.pointerEvents = 'none';
-            button.style.opacity = '0.5';
+            button.style.opacity = '0.8';
 
             const emailContent = getEmailContent();
+            const tone = select.value || "professional"; // Default to professional if empty string
             
             const response = await fetch('http://localhost:8080/api/email/generate', {
                 method: 'POST',
@@ -80,7 +109,7 @@ async function injectButton() {
                 },
                 body: JSON.stringify({ 
                     emailContent: emailContent,
-                    tone: "professional"
+                    tone: tone
                 })
             });
 
@@ -103,15 +132,18 @@ async function injectButton() {
             console.error("Error generating reply:", error);
             alert('Failed to generate reply. Check if your local server is running at http://localhost:8080');
         } finally {
-            button.innerHTML = 'AI Reply';
+            button.innerHTML = `
+                <span class="ai-btn-icon">✨</span>
+                <span class="ai-btn-text">AI Reply</span>
+            `;
             button.style.pointerEvents = 'auto';
             button.style.opacity = '1';
         }
     });
 
     // Insert at the beginning of the toolbar
-    toolbar.insertBefore(button, toolbar.firstChild);
-    console.log("AI button injected successfully");
+    toolbar.insertBefore(container, toolbar.firstChild);
+    console.log("AI container injected successfully");
 }
 
 /**
@@ -134,7 +166,42 @@ const observer = new MutationObserver((mutations) => {
     }
 });
 
-observer.observe(document.body, { 
-    childList: true, 
-    subtree: true 
-});
+// State Management
+let isExtensionEnabled = true;
+
+function initExtension() {
+    chrome.storage.local.get(['extensionEnabled'], (result) => {
+        isExtensionEnabled = result.extensionEnabled !== false;
+        
+        if (isExtensionEnabled) {
+            observer.observe(document.body, { childList: true, subtree: true });
+            // Check if compose is already open
+            if (document.querySelector('.aDH, .btC')) {
+                injectButton();
+            }
+        }
+    });
+
+    // Listen for toggle changes from popup
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+        if (namespace === 'local' && changes.extensionEnabled) {
+            isExtensionEnabled = changes.extensionEnabled.newValue;
+            if (isExtensionEnabled) {
+                console.log("AI Extension enabled");
+                observer.observe(document.body, { childList: true, subtree: true });
+                if (document.querySelector('.aDH, .btC')) {
+                    injectButton();
+                }
+            } else {
+                console.log("AI Extension disabled");
+                observer.disconnect();
+                const existingContainer = document.querySelector('.ai-reply-container');
+                if (existingContainer) {
+                    existingContainer.remove();
+                }
+            }
+        }
+    });
+}
+
+initExtension();

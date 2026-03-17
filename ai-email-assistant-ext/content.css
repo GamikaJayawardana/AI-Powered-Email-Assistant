@@ -1,0 +1,98 @@
+/* Custom styling for injected Gmail components */
+
+.ai-reply-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 12px;
+    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+}
+
+.ai-tone-select {
+    appearance: none;
+    background-color: #f1f3f4;
+    border: 1px solid transparent;
+    border-radius: 18px;
+    padding: 6px 32px 6px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #3c4043;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%235f6368%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px top 50%;
+    background-size: 10px auto;
+}
+
+.ai-tone-select:hover {
+    background-color: #e8eaed;
+    color: #202124;
+}
+
+.ai-tone-select:focus {
+    border-color: #4f46e5;
+    background-color: #fff;
+    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+}
+
+.ai-reply-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: white;
+    border: none;
+    border-radius: 18px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.ai-reply-btn:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.20);
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #4f46e5, #9333ea);
+}
+
+.ai-reply-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.ai-btn-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.loading-spin {
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+/* Dark mode overrides (Gmail often injects dark mode natively) */
+@media (prefers-color-scheme: dark) {
+    .ai-tone-select {
+        background-color: #3c4043;
+        color: #e8eaed;
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23bdc1c6%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    }
+    .ai-tone-select:hover {
+        background-color: #5f6368;
+        color: #fff;
+    }
+    .ai-tone-select:focus {
+        background-color: #303134;
+        border-color: #818cf8;
+    }
+}
