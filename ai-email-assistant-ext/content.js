@@ -1,10 +1,8 @@
 console.log("AI Email Reply Extension: Content script loaded");
 
-/**
- * Finds the Gmail compose toolbar using multiple known selectors.
- */
+
 function findComposeToolbar() {
-    // Gmail often uses .btC (bottom bar) or .aDH (toolbar container)
+    
     const selectors = ['.btC', '.aDH', '.gU.Up', '[role="toolbar"]'];
     for (const selector of selectors) {
         const toolbar = document.querySelector(selector);
@@ -16,9 +14,7 @@ function findComposeToolbar() {
     return null;
 }
 
-/**
- * Creates the AI UI container with Tone Select and Reply button.
- */
+
 function createUIContainer() {
     const container = document.createElement('div');
     container.className = 'ai-reply-container';

@@ -6,56 +6,113 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>4.0.3</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>com.greams</groupId>
 	<artifactId>ai-email-assistant</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>ai-email-assistant</name>
-	<description>Demo project for Spring Boot</description>
+	<description>AI-Powered Email Assistant with RAG (Retrieval-Augmented Generation)</description>
 	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
+	<licenses><license/></licenses>
+	<developers><developer/></developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection/><developerConnection/><tag/><url/>
 	</scm>
+
 	<properties>
 		<java.version>25</java.version>
+		<!--
+		  COMPATIBILITY NOTE
+		  Spring AI 1.0.0 GA targets Spring Boot 3.3.x / Spring Framework 6.x.
+		  Spring Boot 4.0.x runs on Spring Framework 7.x (Jakarta EE 11).
+		  If you hit dependency resolution errors, check https://spring.io/projects/spring-ai
+		  for a release that explicitly supports Spring Boot 4.0 and update this version.
+		-->
+		<spring-ai.version>1.0.0</spring-ai.version>
 	</properties>
+
+	<!--
+	  The Spring AI BOM pins all spring-ai-* artifact versions so individual
+	  <dependency> blocks below need no <version> tag.
+	-->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.ai</groupId>
+				<artifactId>spring-ai-bom</artifactId>
+				<version>${spring-ai.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
+
+		<!-- ── Web ───────────────────────────────────────────────────────── -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
+		<!-- WebFlux kept for potential reactive use; WebClientConfig.java stays valid -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
 
+		<!-- ── Utilities ──────────────────────────────────────────────────── -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- ── Spring AI: Google Generative AI ───────────────────────────── -->
+		<!--
+		  Provides two auto-configured beans consumed by the RAG pipeline:
+		    1. ChatClient.Builder     → used in EmailGeneratorService for LLM calls
+		    2. EmbeddingModel         → used internally by MongoDBAtlasVectorStore
+		       (model: text-embedding-004, 768 dimensions)
+		  Property prefix: spring.ai.google.genai
+		-->
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-google-genai-spring-boot-starter</artifactId>
+		</dependency>
+
+		<!-- ── Spring AI: MongoDB Atlas Vector Store ──────────────────────── -->
+		<!--
+		  Auto-configures the VectorStore bean (MongoDBAtlasVectorStore).
+		  On every add(), it calls the EmbeddingModel above to generate vectors
+		  before writing to MongoDB. On similaritySearch(), it runs an Atlas
+		  Vector Search query with optional metadata filters.
+		  Property prefix: spring.ai.vectorstore.mongodb
+		-->
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-mongodb-atlas-store-spring-boot-starter</artifactId>
+		</dependency>
+
+		<!-- Spring Data MongoDB — provides MongoClient and MongoTemplate -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
+		</dependency>
+
+		<!-- ── Test ───────────────────────────────────────────────────────── -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 
 	<build>
